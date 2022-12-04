@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+
+    <script>
+      const socket = new WebSocket("ws://localhost:3001/ws");
+
+      function submit(event) {
+        const now = new Date().valueOf();
+        document.getElementById("start").value = new Date().valueOf();
+
+        socket.send("ping");
+      }
+
+      // Listen for messages
+      socket.addEventListener("message", (event) => {
+        document.getElementById("end").value = new Date().valueOf();
+        document.getElementById("diff").value =
+          new Date().valueOf() - document.getElementById("start").value;
+      });
+    </script>
+  </head>
+  <body>
+    <div>
+      <button onclick="submit()">Ping</button><br/><br/>
+
+      <label for="start">Start TS</label>
+      <input type="text" disabled id="start" name="start" /><br/>
+
+      <label for="start">End TS</label>
+      <input type="text" disabled id="end" name="end" /> <br/>
+
+      <label for="start">Delta TS (Ping)</label>
+      <input type="text" disabled id="diff" name="diff" /> <br/>
+    </div>
+  </body>
+</html>

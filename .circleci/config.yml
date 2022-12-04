@@ -1,0 +1,71 @@
+version: 2.1
+
+orbs:
+  go: circleci/go@1.7.0
+  gh: circleci/github-cli@1.0.4
+
+commands:
+
+jobs:
+  test:
+    executor:
+      name: go/default
+      tag: '1.16'
+    steps:
+      - checkout
+      - go/mod-download-cached
+      - run:
+          name: Test
+          command: make test
+  build:
+    executor:
+      name: go/default
+      tag: '1.16'
+    steps:
+      - checkout
+      - go/load-cache
+      - run:
+          name: Building
+          command: PLATFORMS=linux/amd64 make build
+      - persist_to_workspace:
+          root: ./artifacts/
+          paths:
+            - remote_desktop_ping_service_*
+  publish:
+    docker:
+      - image: 'cimg/base:stable'
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./artifacts
+      - gh/setup
+      - run:
+          name: "Publish Release on GitHub"
+          command: gh release create ${CIRCLE_TAG} --notes ${CIRCLE_TAG} ./artifacts/remote_desktop_ping_service_*
+
+workflows:
+  workflow:
+    jobs:
+      - test:
+          filters:
+            branches:
+              only: [main, /feature.*/, /fix.*/]
+            tags:
+              only: /.*/
+      - build:
+          requires:
+            - test
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /.*/
+      - publish:
+          context: ci-bot-lf1
+          requires:
+            - build
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /.*/

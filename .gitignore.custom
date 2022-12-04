@@ -1,0 +1,6 @@
+
+# Build
+reservation_daemon_*
+
+# Local env
+.envrc.local
